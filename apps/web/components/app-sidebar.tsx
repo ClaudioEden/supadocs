@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ChevronRight, Search } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -12,16 +13,89 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
 } from "@workspace/ui/components/sidebar";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@workspace/ui/components/collapsible";
+import { ChatModal } from "@/components/chat-modal";
 
-const docLinks = [
-  { title: "What is Supadocs?", href: "/docs" },
-  { title: "Getting Started", href: "/docs/nesting/how-to-use-supadocs" },
-];
+export type SidebarNode = {
+  title: string;
+  url: string;
+  children?: SidebarNode[];
+  slug: string[];
+};
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+function isChildActive(node: SidebarNode, pathname: string): boolean {
+  if (node.url !== "#" && pathname === node.url) return true;
+  if (node.children) {
+    return node.children.some((child) => isChildActive(child, pathname));
+  }
+  return false;
+}
+
+function TreeItem({
+  node,
+  isSub = false,
+}: {
+  node: SidebarNode;
+  isSub?: boolean;
+}) {
   const pathname = usePathname();
+  const isActive =
+    node.url !== "#" && (pathname === node.url);
 
+  const isOpen =
+    isActive ||
+    (node.children && node.children.some((child) => isChildActive(child, pathname)));
+
+  const ItemComponent = isSub ? SidebarMenuSubItem : SidebarMenuItem;
+  const ButtonComponent = isSub ? SidebarMenuSubButton : SidebarMenuButton;
+
+  if (node.children && node.children.length > 0) {
+    return (
+      <Collapsible defaultOpen={!!isOpen} className="group/collapsible">
+        <ItemComponent>
+          <CollapsibleTrigger asChild>
+            <ButtonComponent>
+              {node.title}
+              <ChevronRight className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-90" />
+            </ButtonComponent>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <SidebarMenuSub>
+              {node.children.map((child) => (
+                <TreeItem
+                  key={child.url + child.title}
+                  node={child}
+                  isSub={true}
+                />
+              ))}
+            </SidebarMenuSub>
+          </CollapsibleContent>
+        </ItemComponent>
+      </Collapsible>
+    );
+  }
+
+  return (
+    <ItemComponent>
+      <ButtonComponent asChild isActive={isActive}>
+        <Link href={node.url}>{node.title}</Link>
+      </ButtonComponent>
+    </ItemComponent>
+  );
+}
+
+export function AppSidebar({
+  tree,
+  ...props
+}: React.ComponentProps<typeof Sidebar> & { tree: SidebarNode[] }) {
   return (
     <Sidebar {...props}>
       <SidebarHeader>
@@ -35,26 +109,29 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
+          <SidebarMenuItem>
+            <ChatModal
+              trigger={
+                <SidebarMenuButton
+                  variant="outline"
+                  className="justify-start text-muted-foreground"
+                >
+                  <Search className="mr-2 size-4" />
+                  Search or Ask AI...
+                </SidebarMenuButton>
+              }
+            />
+          </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Docs</SidebarGroupLabel>
+          <SidebarGroupLabel>Documentation</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {docLinks.map((doc) => {
-                const isActive =
-                  pathname === doc.href ||
-                  (doc.href !== "/docs" && pathname.startsWith(`${doc.href}/`));
-
-                return (
-                  <SidebarMenuItem key={doc.href}>
-                    <SidebarMenuButton asChild isActive={isActive}>
-                      <Link href={doc.href}>{doc.title}</Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
+              {tree.map((node) => (
+                <TreeItem key={node.url + node.title} node={node} />
+              ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
