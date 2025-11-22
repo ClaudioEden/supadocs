@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import Script from "next/script";
 import { AppSidebar } from "@/components/app-sidebar";
 import { DataStreamProvider } from "@/components/data-stream-provider";
+import { getDocsTree } from "@/lib/docs";
 import {
   SidebarInset,
   SidebarProvider,
@@ -14,7 +15,7 @@ export default async function Layout({
 }: {
   children: React.ReactNode;
 }) {
-  const [cookieStore] = await Promise.all([cookies()]);
+  const [cookieStore, tree] = await Promise.all([cookies(), getDocsTree()]);
   const isCollapsed = cookieStore.get("sidebar_state")?.value !== "true";
 
   return (
@@ -25,7 +26,7 @@ export default async function Layout({
       />
       <DataStreamProvider>
         <SidebarProvider defaultOpen={!isCollapsed}>
-          <AppSidebar />
+          <AppSidebar tree={tree} />
           <SidebarInset>{children}</SidebarInset>
         </SidebarProvider>
       </DataStreamProvider>

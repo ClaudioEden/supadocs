@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { MDXRemote } from "next-mdx-remote/rsc";
-import { ChevronDownIcon } from "lucide-react";
-import { listDocSlugs, getDocBySlug } from "@/lib/docs";
+import { ChevronDownIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import { listDocSlugs, getDocBySlug, getPrevNext } from "@/lib/docs";
 import { CopyDocButton } from "./copy-doc-button";
 import { Button } from "@workspace/ui/components/button";
 import { ButtonGroup } from "@workspace/ui/components/button-group";
@@ -61,6 +62,8 @@ export default async function DocPage(props: PageProps) {
   if (!doc) {
     notFound();
   }
+
+  const { prev, next } = await getPrevNext(slug);
 
   const chatGptHref = buildChatGptHref(doc.slug);
   const claudeHref = buildClaudeHref(doc.slug);
@@ -124,6 +127,37 @@ export default async function DocPage(props: PageProps) {
         </header>
         <div className="prose prose-neutral dark:prose-invert">
           <MDXRemote source={doc.content} components={mdxComponents} />
+        </div>
+
+        <div className="mt-10 flex justify-between border-t pt-6">
+          {prev ? (
+            <Link
+              href={prev.url}
+              className="group flex flex-col items-start gap-1"
+            >
+              <span className="text-sm text-muted-foreground">Previous</span>
+              <span className="font-medium text-foreground group-hover:text-primary flex items-center gap-1">
+                <ChevronLeft className="size-4" />
+                {prev.title}
+              </span>
+            </Link>
+          ) : (
+            <div />
+          )}
+          {next ? (
+            <Link
+              href={next.url}
+              className="group flex flex-col items-end gap-1"
+            >
+              <span className="text-sm text-muted-foreground">Next</span>
+              <span className="font-medium text-foreground group-hover:text-primary flex items-center gap-1">
+                {next.title}
+                <ChevronRight className="size-4" />
+              </span>
+            </Link>
+          ) : (
+            <div />
+          )}
         </div>
       </article>
     </main>
