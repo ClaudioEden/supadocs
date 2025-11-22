@@ -134,6 +134,7 @@ export default async function DocPage(props: PageProps) {
             <Link
               href={prev.url}
               className="group flex flex-col items-start gap-1"
+              data-testid="doc-prev"
             >
               <span className="text-sm text-muted-foreground">Previous</span>
               <span className="font-medium text-foreground group-hover:text-primary flex items-center gap-1">
@@ -148,6 +149,7 @@ export default async function DocPage(props: PageProps) {
             <Link
               href={next.url}
               className="group flex flex-col items-end gap-1"
+              data-testid="doc-next"
             >
               <span className="text-sm text-muted-foreground">Next</span>
               <span className="font-medium text-foreground group-hover:text-primary flex items-center gap-1">

@@ -102,7 +102,7 @@ export function AppSidebar({
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <Link className="flex flex-row items-center gap-3" href="/">
+              <Link className="flex flex-row items-center gap-3" href="/" data-testid="sidebar-logo">
                 <span className="cursor-pointer rounded-md px-2 font-semibold text-lg hover:bg-muted">
                   Supadocs
                 </span>
@@ -115,6 +115,7 @@ export function AppSidebar({
                 <SidebarMenuButton
                   variant="outline"
                   className="justify-start text-muted-foreground"
+                  data-testid="sidebar-search"
                 >
                   <Search className="mr-2 size-4" />
                   Search or Ask AI...
